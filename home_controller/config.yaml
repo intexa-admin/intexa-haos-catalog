@@ -1,0 +1,61 @@
+name: INTEXA
+slug: home_controller
+version: 0.1.29
+description: INTEXA Client, Installer y configuración para Home Assistant OS
+
+arch:
+  - amd64
+
+startup: application
+boot: auto
+init: false
+backup: cold
+backup_exclude:
+  - controller-backup-work
+  - controller-backup-work/**
+
+ingress: true
+ingress_port: 8099
+
+host_network: true
+homeassistant_api: true
+hassio_api: true
+hassio_role: backup
+
+map:
+  - type: backup
+    read_only: true
+
+ports:
+  8088/tcp: 8088
+  8089/tcp: 8089
+  9443/tcp: 9443
+
+ports_description:
+  8088/tcp: INTEXA Client
+  8089/tcp: INTEXA Installer
+  9443/tcp: INTEXA Local TLS (pinned)
+
+watchdog: http://[HOST]:[PORT:8088]/_health
+
+environment:
+  CONTROLLER_CONFIG_FILE: /data/controller-config.json
+  CONTROLLER_SECURITY_FILE: /data/controller-security.json
+  CONTROLLER_INSTALLATION_FILE: /data/controller-installation.json
+  CONTROLLER_LOCAL_TLS_DIRECTORY: /data/controller-local-tls
+  CONTROLLER_CLOUD_IDENTITY_FILE: /data/controller-cloud-identity.json
+  CONTROLLER_ADMINISTRATIVE_IDENTITY_FILE: /data/controller-administrative-identity.json
+  CONTROLLER_CLOUD_PROVISIONING_FILE: /data/controller-cloud-provisioning.json
+  CONTROLLER_TUNNEL_TOKEN_FILE: /data/controller-tunnel-token
+  CONTROLLER_RECOVERY_PUBLIC_IDENTITY_FILE: /data/controller-recovery-public.json
+  CONTROLLER_BACKUP_UPLOAD_STATE_FILE: /data/controller-backup-upload-state.json
+  CONTROLLER_BACKUP_PIPELINE_FILE: /data/controller-backup-pipeline.json
+  CONTROLLER_BACKUP_WORK_DIRECTORY: /data/controller-backup-work
+  CONTROLLER_DEVICE_API_ORIGIN: https://controller-api.intexaconnect.com
+  CONTROLLER_REMOTE_BASE_DOMAIN: intexaconnect.com
+  CONTROLLER_LOCAL_TLS_PORT: "9443"
+  CONTROLLER_CONFIG_PORT: "4173"
+  CONTROLLER_PUBLIC_PORT: "8088"
+  CONTROLLER_DISCOVERY_ENABLED: "true"
+  HA_WEBSOCKET_URL: ws://homeassistant:80/api/websocket
+image: "ghcr.io/intexa-admin/home-controller"

@@ -1,0 +1,102 @@
+name: Publish private Home Controller image
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact 40-character commit SHA from al-29/home-controller
+        required: true
+        type: string
+      version:
+        description: Exact HAOS app version to publish
+        required: true
+        type: string
+      confirm:
+        description: Type PUBLISH to authorize this release
+        required: true
+        type: string
+
+concurrency:
+  group: publish-home-controller-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/intexa-admin/home-controller
+
+jobs:
+  validate-build-publish:
+    if: ${{ inputs.confirm == 'PUBLISH' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out distribution metadata
+        uses: actions/checkout@v4
+
+      - name: Validate immutable release inputs
+        shell: bash
+        run: |
+          [[ "${{ inputs.source_sha }}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          grep -qx "version: ${{ inputs.version }}" home_controller/config.yaml
+          grep -qx 'image: "ghcr.io/intexa-admin/home-controller"' home_controller/config.yaml
+
+      - name: Check out private application source read-only
+        uses: actions/checkout@v4
+        with:
+          repository: al-29/home-controller
+          ref: ${{ inputs.source_sha }}
+          ssh-key: ${{ secrets.SOURCE_REPOSITORY_SSH_KEY }}
+          persist-credentials: false
+          path: source
+
+      - name: Verify exact source revision
+        shell: bash
+        run: test "$(git -C source rev-parse HEAD)" = "${{ inputs.source_sha }}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+
+      - name: Install locked dependencies
+        working-directory: source
+        run: npm ci
+
+      - name: Build and validate the HAOS application payload
+        working-directory: source
+        run: |
+          npm run package:ha-app
+          npm run validate:haos-image-context -- --expected-version "${{ inputs.version }}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to private GHCR namespace
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish immutable amd64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: source/home-assistant-app/home-controller
+          file: source/home-assistant-app/home-controller/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE }}:${{ inputs.version }}
+          build-args: |
+            BUILD_VERSION=${{ inputs.version }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/intexa-admin/intexa-haos-catalog
+            org.opencontainers.image.revision=${{ inputs.source_sha }}
+            org.opencontainers.image.version=${{ inputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
