@@ -6,25 +6,21 @@ El Client Android prefiere acceso Local First: descubre `_homectl._tcp.local.`, 
 
 El gateway Remote escucha solamente en `127.0.0.1:4180` y publica únicamente las rutas necesarias del Client. No expone Installer, configuración administrativa, Home Assistant, HAOS ni la LAN. La credencial del túnel debe existir exclusivamente en `/data/controller-tunnel-token`, con propietario `root:root` y modo `0600`; nunca debe incluirse en el paquete.
 
-## Preparar el paquete en el PC
+## Instalación en Home Assistant OS
 
-Desde la raíz de este repositorio, ejecutar `npm run package:ha-app -- --seed` **solo para este primer piloto** si se desea importar el `data/controller-config.json` local. El empaquetado valida ese JSON antes de colocarlo como semilla. Sin `--seed`, la App inicializa una configuración vacía si `/data/controller-config.json` no existe. El resultado para copiar es el directorio completo `home-assistant-app/home-controller`, incluido su subdirectorio generado `artifacts`. No publicar una imagen que contenga la semilla de esta vivienda.
+La imagen de INTEXA es privada. El administrador debe registrar primero en Supervisor una credencial `ghcr.io` de solo lectura y después agregar este catálogo como repositorio personalizado.
 
-La App usa la semilla únicamente si `/data/controller-config.json` no existe. Nunca reemplaza automáticamente un archivo persistido durante un arranque o una actualización. Si el archivo existente es inválido, `/health` falla y los logs muestran el problema; hay que conservarlo para diagnóstico.
-
-## Prueba manual en Home Assistant OS
-
-1. Construir y empaquetar INTEXA en el PC con el comando anterior.
-2. Copiar el directorio local `home-controller` completo a `/addons/home-controller` en Home Assistant OS mediante el acceso a archivos disponible.
-3. En Home Assistant, actualizar *Local Apps* en **Settings → Apps → App store**.
-4. Instalar la App INTEXA local.
+1. En Home Assistant, abrir **Settings → Apps → App store**.
+2. En el menú de la tienda, registrar la credencial autorizada para `ghcr.io`.
+3. Agregar `https://github.com/intexa-admin/intexa-haos-catalog` como repositorio personalizado.
+4. Actualizar la tienda e instalar INTEXA.
 5. Iniciarla y comprobar que **Start on boot** está habilitado.
 6. Revisar los logs de la App y el estado de `/_health` en `:8088`.
 7. Confirmar en logs que el conector server-side autentica mediante `SUPERVISOR_TOKEN` y queda listo para configuración, estados y `state_changed`.
 8. Abrir Installer mediante Home Assistant Ingress.
 9. Verificar que una cuenta HA no administradora no puede usar Installer ni escribir `/config`.
 10. Verificar que una cuenta HA administradora accede a Installer y guarda configuración.
-12. Comprobar que la configuración existente o la semilla se cargó según lo previsto.
+12. Comprobar que la configuración persistente se cargó según lo previsto.
 13. Controlar `switch.test_luz_led` desde Client.
 14. Abrir el Client Android en la LAN y comprobar discovery, validación TLS y pairing.
 15. Reiniciar completamente el servidor físico Home Assistant.

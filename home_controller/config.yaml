@@ -1,6 +1,6 @@
 name: INTEXA
 slug: home_controller
-version: 0.1.29
+version: 0.1.30
 description: INTEXA Client, Installer y configuración para Home Assistant OS
 
 arch:
@@ -13,6 +13,8 @@ backup: cold
 backup_exclude:
   - controller-backup-work
   - controller-backup-work/**
+  - controller-restore-state.json
+  - controller-cloud-replacement.pending.json
 
 ingress: true
 ingress_port: 8099
@@ -51,6 +53,7 @@ environment:
   CONTROLLER_BACKUP_UPLOAD_STATE_FILE: /data/controller-backup-upload-state.json
   CONTROLLER_BACKUP_PIPELINE_FILE: /data/controller-backup-pipeline.json
   CONTROLLER_BACKUP_WORK_DIRECTORY: /data/controller-backup-work
+  CONTROLLER_RESTORE_STATE_FILE: /data/controller-restore-state.json
   CONTROLLER_DEVICE_API_ORIGIN: https://controller-api.intexaconnect.com
   CONTROLLER_REMOTE_BASE_DOMAIN: intexaconnect.com
   CONTROLLER_LOCAL_TLS_PORT: "9443"
