@@ -26,6 +26,7 @@ permissions:
 
 env:
   IMAGE: ghcr.io/intexa-admin/home-controller
+  BUILD_VERSION: ${{ inputs.version }}
 
 jobs:
   validate-build-publish:
@@ -73,9 +74,12 @@ jobs:
       - name: Build and validate the HAOS application payload
         working-directory: source
         run: |
-          npm run package:ha-app
           cp ../home_controller/config.yaml home-assistant-app/home-controller/config.yaml
+          npm run package:ha-app
           npm run validate:haos-image-context -- --expected-version "${{ inputs.version }}"
+
+      - name: Verify release version coherence
+        run: node .github/scripts/verify-release-versions.mjs
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -96,7 +100,7 @@ jobs:
           push: true
           tags: ${{ env.IMAGE }}:${{ inputs.version }}
           build-args: |
-            BUILD_VERSION=${{ inputs.version }}
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
           labels: |
             org.opencontainers.image.source=https://github.com/intexa-admin/intexa-haos-catalog
             org.opencontainers.image.revision=${{ inputs.source_sha }}
