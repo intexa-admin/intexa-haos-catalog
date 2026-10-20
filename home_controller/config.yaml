@@ -1,6 +1,6 @@
 name: INTEXA
 slug: home_controller
-version: 0.1.32
+version: 0.1.33
 description: INTEXA Client, Installer y configuración para Home Assistant OS
 
 arch:
