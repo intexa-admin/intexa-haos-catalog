@@ -60,20 +60,6 @@ jobs:
         shell: bash
         run: test "$(git -C source rev-parse HEAD)" = "${{ inputs.source_sha }}"
 
-      - name: Check out patched cloudflared source read-only
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: cloudflare/cloudflared
-          ref: 56fe33a9303e369975fc049469d37a32a2431634
-          persist-credentials: false
-          path: source/home-assistant-app/home-controller/cloudflared-source
-
-      - name: Verify exact cloudflared revision and security dependency
-        shell: bash
-        run: |
-          test "$(git -C source/home-assistant-app/home-controller/cloudflared-source rev-parse HEAD)" = "56fe33a9303e369975fc049469d37a32a2431634"
-          grep -Fqx $'\tgithub.com/klauspost/compress v1.20.3 // indirect' source/home-assistant-app/home-controller/cloudflared-source/go.mod
-
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -94,6 +80,20 @@ jobs:
 
       - name: Verify release version coherence
         run: node .github/scripts/verify-release-versions.mjs
+
+      - name: Check out patched cloudflared source read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cloudflare/cloudflared
+          ref: 56fe33a9303e369975fc049469d37a32a2431634
+          persist-credentials: false
+          path: source/home-assistant-app/home-controller/cloudflared-source
+
+      - name: Verify exact cloudflared revision and security dependency
+        shell: bash
+        run: |
+          test "$(git -C source/home-assistant-app/home-controller/cloudflared-source rev-parse HEAD)" = "56fe33a9303e369975fc049469d37a32a2431634"
+          grep -Fqx $'\tgithub.com/klauspost/compress v1.20.3 // indirect' source/home-assistant-app/home-controller/cloudflared-source/go.mod
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
