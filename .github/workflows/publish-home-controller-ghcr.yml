@@ -32,7 +32,7 @@ jobs:
   validate-build-publish:
     if: ${{ inputs.confirm == 'PUBLISH' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Check out distribution metadata
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,6 +59,20 @@ jobs:
       - name: Verify exact source revision
         shell: bash
         run: test "$(git -C source rev-parse HEAD)" = "${{ inputs.source_sha }}"
+
+      - name: Check out patched cloudflared source read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cloudflare/cloudflared
+          ref: 56fe33a9303e369975fc049469d37a32a2431634
+          persist-credentials: false
+          path: source/home-assistant-app/home-controller/cloudflared-source
+
+      - name: Verify exact cloudflared revision and security dependency
+        shell: bash
+        run: |
+          test "$(git -C source/home-assistant-app/home-controller/cloudflared-source rev-parse HEAD)" = "56fe33a9303e369975fc049469d37a32a2431634"
+          grep -Fqx $'\tgithub.com/klauspost/compress v1.20.3 // indirect' source/home-assistant-app/home-controller/cloudflared-source/go.mod
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -112,6 +126,7 @@ jobs:
       - name: Scan release image for known vulnerabilities
         uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
         with:
+          version: v0.76.1
           image-ref: ${{ env.IMAGE }}:${{ inputs.version }}
           format: table
           exit-code: "1"
