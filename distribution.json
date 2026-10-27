@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "app": "home_controller",
   "version": "0.1.40",
-  "sourceCommit": "1eec7b299c513049104033c048e10b491de82ee1",
+  "sourceCommit": "8350287853468e21b89cad4b32378f7edc077745",
   "image": "ghcr.io/intexa-admin/home-controller",
   "repositoryUrl": "https://github.com/intexa-admin/intexa-haos-catalog",
   "containsSource": false
