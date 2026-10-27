@@ -1,6 +1,6 @@
 name: INTEXA
 slug: home_controller
-version: 0.1.41
+version: 0.1.42
 description: INTEXA Client, Installer y configuración para Home Assistant OS
 
 arch:
@@ -50,7 +50,7 @@ environment:
   CONTROLLER_CLOUD_PROVISIONING_FILE: /data/controller-cloud-provisioning.json
   CONTROLLER_REMOTE_ACCESS_STATE_FILE: /data/controller-remote-access.json
   CONTROLLER_TUNNEL_TOKEN_FILE: /data/controller-tunnel-token
-  CONTROLLER_REMOTE_ACCESS_DISABLED_FILE: /data/controller-remote-access.disabled
+  CONTROLLER_REMOTE_ACCESS_DISABLED_FILE: /data/controller-remote-client.disabled
   CONTROLLER_RECOVERY_PUBLIC_IDENTITY_FILE: /data/controller-recovery-public.json
   CONTROLLER_RECOVERY_REGISTRATION_FILE: /data/controller-recovery-registration.json
   CONTROLLER_BACKUP_UPLOAD_STATE_FILE: /data/controller-backup-upload-state.json
